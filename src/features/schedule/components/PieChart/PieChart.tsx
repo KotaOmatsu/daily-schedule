@@ -133,7 +133,7 @@ export const PieChart: React.FC<PieChartProps> = ({
     try {
       const svgClone = svgRef.current.cloneNode(true) as SVGSVGElement;
       const elementsToRemove = svgClone.querySelectorAll(
-        '[data-export-ignore="true"]'
+        '[data-export-ignore="true"], [data-export-hide="true"]'
       );
       elementsToRemove.forEach((el) => el.remove());
 
@@ -242,7 +242,7 @@ export const PieChart: React.FC<PieChartProps> = ({
                 y={pos.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-[10px] fill-gray-400 font-medium select-none pointer-events-none"
+                className="text-[9px] fill-gray-400 font-medium select-none pointer-events-none"
             >
                 {i}
             </text>
