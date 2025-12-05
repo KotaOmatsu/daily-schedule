@@ -30,11 +30,11 @@ export const Slice: React.FC<SliceProps> = ({
 
   // Calculate position for the "+" button (end of the slice)
   const endAngle = minutesToAngle(item.start + item.duration);
-  // Position slightly outside the radius to be distinct
-  const buttonPos = getCoordinatesForAngle(endAngle, RADIUS + 14);
+  // Position closer to ensure overlap (RADIUS=120, button radius=10, pos=128 -> overlap of 2px)
+  const buttonPos = getCoordinatesForAngle(endAngle, RADIUS + 8);
 
   return (
-    <g className="group/slice">
+    <g className="group">
       {isSingleItem ? (
         <circle
           cx={CENTER}
@@ -62,31 +62,28 @@ export const Slice: React.FC<SliceProps> = ({
 
       {/* Add Button */}
       <g
-        className="opacity-0 group-hover/slice:opacity-100 transition-opacity duration-200 cursor-pointer z-50"
+        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
         onClick={(e) => {
           e.stopPropagation();
           onInsertAfter(item.id);
         }}
-        // Ensure the button is rendered on top of other elements visually
         style={{ pointerEvents: "all" }}
       >
+        {/* Invisible hit area to make hovering easier */}
+        <circle cx={buttonPos.x} cy={buttonPos.y} r={14} fill="transparent" />
+        
+        {/* Visible Button Background */}
         <circle
           cx={buttonPos.x}
           cy={buttonPos.y}
           r={10}
           className="fill-white stroke-blue-500 stroke-1 shadow-sm hover:fill-blue-50"
         />
-        <foreignObject
-          x={buttonPos.x - 7}
-          y={buttonPos.y - 7}
-          width={14}
-          height={14}
-          className="pointer-events-none"
-        >
-          <div className="flex items-center justify-center w-full h-full text-blue-500">
-            <Plus size={14} strokeWidth={3} />
-          </div>
-        </foreignObject>
+        
+        {/* Icon */}
+        <g transform={`translate(${buttonPos.x - 7}, ${buttonPos.y - 7})`}>
+          <Plus size={14} strokeWidth={3} className="text-blue-500" />
+        </g>
       </g>
     </g>
   );
