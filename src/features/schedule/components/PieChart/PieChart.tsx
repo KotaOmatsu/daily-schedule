@@ -284,6 +284,8 @@ export const PieChart: React.FC<PieChartProps> = ({
             );
           })}
 
+        <CenterInfo />
+
         {/* Add Button for Selected Item */}
         {addButtonPos && selectedItem && (
           <g
@@ -305,8 +307,6 @@ export const PieChart: React.FC<PieChartProps> = ({
             </g>
           </g>
         )}
-
-        <CenterInfo />
       </svg>
       
       <div
