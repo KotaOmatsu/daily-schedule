@@ -60,7 +60,6 @@ export const ScheduleItem: React.FC<ScheduleItemProps> = ({
 
   return (
     <div 
-      ref={rowRef}
       className="relative group/item"
       onDragOver={(e) => onDragOver(e, item.id)}
       onDrop={(e) => onDrop(e, item.id)}
@@ -71,6 +70,7 @@ export const ScheduleItem: React.FC<ScheduleItemProps> = ({
       )}
 
       <div
+        ref={rowRef}
         className={`
         relative rounded-xl p-3.5 border transition-all duration-200 z-10 pr-8 pl-9
         ${
