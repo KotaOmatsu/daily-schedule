@@ -57,8 +57,10 @@ export default function DailySchedulePlanner() {
         currentSelectedItem.type === "activity" &&
         !currentSelectedItem.title.trim()
       ) {
-        showNotification("予定名を記入してください。", "error");
-        return;
+        // Specification change: Set to "新しい予定" if empty, instead of error
+        handleUpdateItem(selectedItemId, { title: "新しい予定" });
+        showNotification("予定名が未入力だったため、「新しい予定」と設定しました。", "success");
+        // No return here, allow deselection after setting default title
       }
     }
     setSelectedItemId(id);
