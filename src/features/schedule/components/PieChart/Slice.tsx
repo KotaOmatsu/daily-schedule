@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Plus } from "lucide-react";
 import type { ScheduleItemWithPos } from "../../types";
 import {
@@ -24,6 +24,8 @@ export const Slice: React.FC<SliceProps> = ({
   onClick,
   onInsertAfter,
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   const commonClasses = `transition-all duration-300 cursor-pointer ${
     item.type === "gap" ? "hover:fill-gray-100" : "hover:opacity-90"
   } ${isSelected ? "stroke-blue-500 stroke-[2px] z-10 relative" : ""}`;
@@ -34,7 +36,10 @@ export const Slice: React.FC<SliceProps> = ({
   const buttonPos = getCoordinatesForAngle(endAngle, RADIUS + 8);
 
   return (
-    <g className="group">
+    <g
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {isSingleItem ? (
         <circle
           cx={CENTER}
@@ -62,16 +67,19 @@ export const Slice: React.FC<SliceProps> = ({
 
       {/* Add Button */}
       <g
-        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+        className="transition-opacity duration-200 cursor-pointer"
+        style={{
+          opacity: isHovered ? 1 : 0,
+          pointerEvents: isHovered ? "all" : "none",
+        }}
         onClick={(e) => {
           e.stopPropagation();
           onInsertAfter(item.id);
         }}
-        style={{ pointerEvents: "all" }}
       >
         {/* Invisible hit area to make hovering easier */}
         <circle cx={buttonPos.x} cy={buttonPos.y} r={14} fill="transparent" />
-        
+
         {/* Visible Button Background */}
         <circle
           cx={buttonPos.x}
@@ -79,7 +87,7 @@ export const Slice: React.FC<SliceProps> = ({
           r={10}
           className="fill-white stroke-blue-500 stroke-1 shadow-sm hover:fill-blue-50"
         />
-        
+
         {/* Icon */}
         <g transform={`translate(${buttonPos.x - 7}, ${buttonPos.y - 7})`}>
           <Plus size={14} strokeWidth={3} className="text-blue-500" />
