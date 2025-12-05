@@ -65,7 +65,7 @@ const Label = ({ item }: { item: ScheduleItemWithPos }) => {
         y={pos.y}
         textAnchor="middle"
         dominantBaseline="middle"
-        className="text-[11px] font-bold fill-gray-800 drop-shadow-sm text-label-title" // Revert to original font size
+        className="text-[9px] font-bold fill-gray-800 drop-shadow-sm text-label-title" // Revert to original font size
       >
         {item.title}
       </text>

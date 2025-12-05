@@ -165,6 +165,21 @@ export const PieChart: React.FC<PieChartProps> = ({
           el.setAttribute('y', (currentY + 6).toString()); // Shift down by half of removed duration text offset
       });
 
+      // Recalculate time marker positions to be closer to the circle for export
+      svgClone.querySelectorAll('.fill-gray-400.font-medium').forEach((el, i) => {
+          const angle = (i / 24) * 360;
+          // Calculate new position with smaller offset (15 instead of 25)
+          // Duplicate logic from getCoordinatesForAngle locally since we can't import it easily inside this scope if it wasn't bundled, 
+          // but we can just reproduce the math.
+          const rad = (angle - 90) * (Math.PI / 180);
+          const r = RADIUS + 15; // Closer offset
+          const x = CENTER + r * Math.cos(rad);
+          const y = CENTER + r * Math.sin(rad);
+          
+          el.setAttribute('x', x.toString());
+          el.setAttribute('y', y.toString());
+      });
+
       const serializer = new XMLSerializer();
       const svgString = serializer.serializeToString(svgClone);
       const svgBlob = new Blob([svgString], {
