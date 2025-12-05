@@ -93,6 +93,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
             onDragStart={handleListDragStart}
             onDragOver={handleListDragOver}
             onDrop={handleListDrop}
+            onDragEnd={() => setDragOverItemId(null)}
           />
         ))}
       </div>
