@@ -177,6 +177,27 @@ export const PieChart: React.FC<PieChartProps> = ({
           el.setAttribute('y', y.toString());
       });
 
+      // Recalculate tick mark positions for export
+      svgClone.querySelectorAll('.tick-mark').forEach((el, i) => {
+          const angle = (i / 24) * 360;
+          const rad = (angle - 90) * (Math.PI / 180);
+          
+          // Use same offsets as browser view or adjusted for export if needed
+          // Browser: start=RADIUS+2, end=RADIUS+8
+          const rStart = RADIUS + 2;
+          const rEnd = RADIUS + 8;
+
+          const x1 = CENTER + rStart * Math.cos(rad);
+          const y1 = CENTER + rStart * Math.sin(rad);
+          const x2 = CENTER + rEnd * Math.cos(rad);
+          const y2 = CENTER + rEnd * Math.sin(rad);
+
+          el.setAttribute('x1', x1.toString());
+          el.setAttribute('y1', y1.toString());
+          el.setAttribute('x2', x2.toString());
+          el.setAttribute('y2', y2.toString());
+      });
+
       const serializer = new XMLSerializer();
       const svgString = serializer.serializeToString(svgClone);
       const svgBlob = new Blob([svgString], {
@@ -293,7 +314,7 @@ export const PieChart: React.FC<PieChartProps> = ({
                 y1={start.y}
                 x2={end.x}
                 y2={end.y}
-                className="stroke-gray-300 stroke-1"
+                className="stroke-gray-300 stroke-1 tick-mark"
               />
             );
         })}
