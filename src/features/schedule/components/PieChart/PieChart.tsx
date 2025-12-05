@@ -12,7 +12,6 @@ import {
   mergeAdjacentGaps,
 } from "../../utils";
 import { Slice } from "./Slice";
-import { CenterInfo } from "./CenterInfo";
 
 interface PieChartProps {
   itemsWithPos: ScheduleItemWithPos[];
@@ -141,20 +140,15 @@ export const PieChart: React.FC<PieChartProps> = ({
       const styleElement = svgClone.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'style');
       styleElement.textContent = `
         .text-label-title {
-          font-size: 5px !important;
+          font-size: 6px !important;
           transform: translateY(-2px); /* Adjust vertical position */
+        }
+        .text-label-duration {
+          font-size: 4px !important;
         }
         .fill-gray-400.font-medium {
-          font-size: 5px !important;
+          font-size: 6px !important;
           transform: translateY(-2px); /* Adjust vertical position */
-        }
-        .fill-gray-400.select-none.tracking-widest {
-            font-size: 7px !important;
-            transform: translateY(-1px); /* Adjust vertical position */
-        }
-        .text-xl.font-bold.fill-gray-800.select-none {
-            font-size: 10px !important;
-            transform: translateY(-2px); /* Adjust vertical position */
         }
       `;
       svgClone.prepend(styleElement);
@@ -256,7 +250,6 @@ export const PieChart: React.FC<PieChartProps> = ({
         viewBox={`0 0 ${CENTER * 2} ${CENTER * 2}`}
         className="w-full h-full drop-shadow-2xl overflow-visible"
       >
-        <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="white" />
         {React.useMemo(() => {
           return itemsWithPos
             .map((item) => ({
@@ -330,7 +323,7 @@ export const PieChart: React.FC<PieChartProps> = ({
             );
           })}
 
-        <CenterInfo />
+        {/* CenterInfo removed as per request to fill the center */}
 
         {/* Add Button for Selected Item */}
         {addButtonPos && selectedItem && (
