@@ -140,6 +140,7 @@ export default function DailySchedulePlanner() {
           setItems={setItems}
           selectedItemId={selectedItemId}
           onItemClick={handleItemClick}
+          onInsertAfter={handleInsertAfterWrapper}
           showNotification={showNotification}
         />
 

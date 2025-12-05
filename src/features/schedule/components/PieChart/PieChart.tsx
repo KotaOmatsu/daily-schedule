@@ -19,6 +19,7 @@ interface PieChartProps {
   setItems: React.Dispatch<React.SetStateAction<ScheduleItem[]>>;
   selectedItemId: string | null;
   onItemClick: (e: React.MouseEvent, item: ScheduleItemWithPos, clickMinutes: number) => void;
+  onInsertAfter: (id: string) => void;
   showNotification: (message: string, type?: "save" | "success" | "error") => void;
 }
 
@@ -27,6 +28,7 @@ export const PieChart: React.FC<PieChartProps> = ({
   setItems,
   selectedItemId,
   onItemClick,
+  onInsertAfter,
   showNotification,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -218,6 +220,7 @@ export const PieChart: React.FC<PieChartProps> = ({
               const clickMinutes = getMinutesFromEvent(e);
               onItemClick(e, item, clickMinutes);
             }}
+            onInsertAfter={onInsertAfter}
           />
         ))}
         
