@@ -240,7 +240,7 @@ export const PieChart: React.FC<PieChartProps> = ({
   let addButtonPos = null;
   if (selectedItem && activeDragIndex === null) {
     const endAngle = minutesToAngle(selectedItem.start + selectedItem.duration);
-    addButtonPos = getCoordinatesForAngle(endAngle, -RADIUS / 3); // Position 4px more central
+    addButtonPos = getCoordinatesForAngle(endAngle, -RADIUS / 2); // Position at half the radius length
   }
 
   return (
