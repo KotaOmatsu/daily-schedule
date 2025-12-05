@@ -198,7 +198,7 @@ export const PieChart: React.FC<PieChartProps> = ({
   // Calculate button position for selected item
   const selectedItem = selectedItemId ? itemsWithPos.find(i => i.id === selectedItemId) : null;
   let addButtonPos = null;
-  if (selectedItem) {
+  if (selectedItem && activeDragIndex === null) {
     const endAngle = minutesToAngle(selectedItem.start + selectedItem.duration);
     addButtonPos = getCoordinatesForAngle(endAngle, RADIUS + 14); // Position slightly outside
   }
@@ -208,7 +208,7 @@ export const PieChart: React.FC<PieChartProps> = ({
       <svg
         ref={svgRef}
         viewBox={`0 0 ${CENTER * 2} ${CENTER * 2}`}
-        className="w-full h-full drop-shadow-2xl"
+        className="w-full h-full drop-shadow-2xl overflow-visible"
       >
         <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="white" />
         {React.useMemo(() => {
@@ -303,7 +303,7 @@ export const PieChart: React.FC<PieChartProps> = ({
               className="fill-blue-500 stroke-white stroke-2 shadow-lg"
             />
             <g transform={`translate(${addButtonPos.x - 8}, ${addButtonPos.y - 8})`}>
-              <Plus size={16} strokeWidth={3} className="text-white" />
+              <Plus size={16} strokeWidth={3} color="white" />
             </g>
           </g>
         )}
