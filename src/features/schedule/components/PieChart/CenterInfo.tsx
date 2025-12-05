@@ -14,7 +14,7 @@ export const CenterInfo = () => {
         x={CENTER}
         y={CENTER - 8}
         textAnchor="middle"
-        className="text-[10px] font-bold fill-gray-400 select-none tracking-widest"
+        className="text-[10px] font-bold fill-gray-400 select-none tracking-widest export-target-total"
       >
         TOTAL
       </text>
@@ -22,7 +22,7 @@ export const CenterInfo = () => {
         x={CENTER}
         y={CENTER + 12}
         textAnchor="middle"
-        className="text-xl font-bold fill-gray-800 select-none"
+        className="text-xl font-bold fill-gray-800 select-none export-target-24h"
       >
         24H
       </text>

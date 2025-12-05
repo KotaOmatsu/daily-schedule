@@ -137,6 +137,34 @@ export const PieChart: React.FC<PieChartProps> = ({
       );
       elementsToRemove.forEach((el) => el.remove());
 
+      // Apply font size and position adjustments for export image
+      const styleElement = svgClone.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'style');
+      styleElement.textContent = `
+        .text-label-title {
+          font-size: 5px !important;
+          transform: translateY(-2px); /* Adjust vertical position */
+        }
+        .fill-gray-400.font-medium {
+          font-size: 5px !important;
+          transform: translateY(-2px); /* Adjust vertical position */
+        }
+        .fill-gray-400.select-none.tracking-widest {
+            font-size: 7px !important;
+            transform: translateY(-1px); /* Adjust vertical position */
+        }
+        .text-xl.font-bold.fill-gray-800.select-none {
+            font-size: 10px !important;
+            transform: translateY(-2px); /* Adjust vertical position */
+        }
+      `;
+      svgClone.prepend(styleElement);
+
+      // Adjust title Y position after duration is removed
+      svgClone.querySelectorAll('.text-label-title').forEach((el) => {
+          const currentY = parseFloat(el.getAttribute('y') || '0');
+          el.setAttribute('y', (currentY + 6).toString()); // Shift down by half of removed duration text offset
+      });
+
       const serializer = new XMLSerializer();
       const svgString = serializer.serializeToString(svgClone);
       const svgBlob = new Blob([svgString], {
@@ -234,7 +262,7 @@ export const PieChart: React.FC<PieChartProps> = ({
         {/* Markers */}
         {Array.from({ length: 24 }).map((_, i) => {
             const angle = (i / 24) * 360;
-            const pos = getCoordinatesForAngle(angle, 25);
+            const pos = getCoordinatesForAngle(angle, 25); // Revert to original offset
             return (
             <text
                 key={i}
@@ -242,7 +270,7 @@ export const PieChart: React.FC<PieChartProps> = ({
                 y={pos.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-[8px] fill-gray-400 font-medium select-none pointer-events-none"
+                className="text-[10px] fill-gray-400 font-medium select-none pointer-events-none" // Revert to original font size
             >
                 {i}
             </text>

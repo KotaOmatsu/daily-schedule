@@ -57,7 +57,7 @@ export const Slice: React.FC<SliceProps> = ({
 
 const Label = ({ item }: { item: ScheduleItemWithPos }) => {
   const midAngle = minutesToAngle(item.start + item.duration / 2);
-  const pos = getCoordinatesForAngle(midAngle, -RADIUS * 0.35);
+  const pos = getCoordinatesForAngle(midAngle, -RADIUS * 0.35); // Revert to original position
   return (
     <g className="pointer-events-none">
       <text
@@ -65,16 +65,16 @@ const Label = ({ item }: { item: ScheduleItemWithPos }) => {
         y={pos.y}
         textAnchor="middle"
         dominantBaseline="middle"
-        className="text-[9px] font-bold fill-gray-800 drop-shadow-sm"
+        className="text-[11px] font-bold fill-gray-800 drop-shadow-sm text-label-title" // Revert to original font size
       >
         {item.title}
       </text>
       <text
         x={pos.x}
-        y={pos.y + 12}
+        y={pos.y + 12} // Revert to original offset
         textAnchor="middle"
         dominantBaseline="middle"
-        className="text-[7px] fill-gray-500 export-hide"
+        className="text-[9px] fill-gray-500 export-hide text-label-duration" // Revert to original font size, keep export-hide
         data-export-hide="true"
       >
         {formatDuration(item.duration)}
