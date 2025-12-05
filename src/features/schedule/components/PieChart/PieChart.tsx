@@ -150,8 +150,9 @@ export const PieChart: React.FC<PieChartProps> = ({
           font-size: 6px !important;
           transform: translateY(-2px); /* Adjust vertical position */
         }
-        line {
-          stroke-width: 0.5px !important;
+        .tick-mark {
+          stroke: #d1d5db !important; /* gray-300 */
+          stroke-width: 1px !important;
         }
       `;
       svgClone.prepend(styleElement);
