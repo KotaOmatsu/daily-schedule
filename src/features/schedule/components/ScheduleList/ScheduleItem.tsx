@@ -95,8 +95,7 @@ export const ScheduleItem: React.FC<ScheduleItemProps> = ({
             onDelete(item.id);
           }}
           className={`
-          absolute top-3 right-3 p-1.5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors z-20
-          ${isSelected ? "opacity-100" : "opacity-0 group-hover/item:opacity-100"}
+          absolute top-3 right-3 p-1.5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors z-20 opacity-0 ${isSelected ? "" : "group-hover/item:opacity-100"}
         `}
           title="削除"
         >
