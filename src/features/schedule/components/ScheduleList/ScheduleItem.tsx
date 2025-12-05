@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { GripVertical as DragHandleIcon, Trash2, Plus } from "lucide-react";
 import type {
   ScheduleItemWithPos,
@@ -21,6 +21,7 @@ interface ScheduleItemProps {
   onDragStart: (e: React.DragEvent, id: string) => void;
   onDragOver: (e: React.DragEvent, id: string) => void;
   onDrop: (e: React.DragEvent, id: string) => void;
+  onDragEnd: () => void;
 }
 
 export const ScheduleItem: React.FC<ScheduleItemProps> = ({
@@ -36,7 +37,9 @@ export const ScheduleItem: React.FC<ScheduleItemProps> = ({
   onDragStart,
   onDragOver,
   onDrop,
+  onDragEnd,
 }) => {
+  const rowRef = useRef<HTMLDivElement>(null);
   const isGap = item.type === "gap";
   if (isGap) return null;
 
@@ -56,10 +59,8 @@ export const ScheduleItem: React.FC<ScheduleItemProps> = ({
   };
 
   return (
-    <div
+    <div 
       className="relative group/item"
-      draggable
-      onDragStart={(e) => onDragStart(e, item.id)}
       onDragOver={(e) => onDragOver(e, item.id)}
       onDrop={(e) => onDrop(e, item.id)}
     >
@@ -69,6 +70,7 @@ export const ScheduleItem: React.FC<ScheduleItemProps> = ({
       )}
 
       <div
+        ref={rowRef}
         className={`
         relative rounded-xl p-3.5 border transition-all duration-200 z-10 pr-8 pl-9
         ${
@@ -84,7 +86,17 @@ export const ScheduleItem: React.FC<ScheduleItemProps> = ({
         }}
       >
         {/* Drag Handle */}
-        <div className="absolute top-1/2 left-2 -translate-y-1/2 p-1 text-gray-300 cursor-grab hover:text-gray-500 active:cursor-grabbing">
+        <div 
+          className="absolute top-1/2 left-2 -translate-y-1/2 p-1 text-gray-300 cursor-grab hover:text-gray-500 active:cursor-grabbing"
+          draggable
+          onDragStart={(e) => {
+            if (rowRef.current) {
+              e.dataTransfer.setDragImage(rowRef.current, 0, 0);
+            }
+            onDragStart(e, item.id);
+          }}
+          onDragEnd={onDragEnd}
+        >
           <DragHandleIcon size={14} />
         </div>
 
