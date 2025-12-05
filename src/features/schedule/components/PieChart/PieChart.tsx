@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Copy, Download } from "lucide-react";
+import { Copy, Download, Plus } from "lucide-react";
 import type { ScheduleItem, ScheduleItemWithPos } from "../../types";
 import {
   CENTER,
@@ -19,6 +19,7 @@ interface PieChartProps {
   setItems: React.Dispatch<React.SetStateAction<ScheduleItem[]>>;
   selectedItemId: string | null;
   onItemClick: (e: React.MouseEvent, item: ScheduleItemWithPos, clickMinutes: number) => void;
+  onInsertAfter: (id: string) => void;
   showNotification: (message: string, type?: "save" | "success" | "error") => void;
 }
 
@@ -27,6 +28,7 @@ export const PieChart: React.FC<PieChartProps> = ({
   setItems,
   selectedItemId,
   onItemClick,
+  onInsertAfter,
   showNotification,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -193,6 +195,14 @@ export const PieChart: React.FC<PieChartProps> = ({
     }
   };
 
+  // Calculate button position for selected item
+  const selectedItem = selectedItemId ? itemsWithPos.find(i => i.id === selectedItemId) : null;
+  let addButtonPos = null;
+  if (selectedItem) {
+    const endAngle = minutesToAngle(selectedItem.start + selectedItem.duration);
+    addButtonPos = getCoordinatesForAngle(endAngle, RADIUS + 14); // Position slightly outside
+  }
+
   return (
     <div className="relative w-full max-w-[400px] aspect-square select-none mb-8 mt-4 flex-shrink-0 group/chart">
       <svg
@@ -273,6 +283,28 @@ export const PieChart: React.FC<PieChartProps> = ({
               </g>
             );
           })}
+
+        {/* Add Button for Selected Item */}
+        {addButtonPos && selectedItem && (
+          <g
+            className="cursor-pointer transition-transform hover:scale-110"
+            onClick={(e) => {
+              e.stopPropagation();
+              onInsertAfter(selectedItem.id);
+            }}
+            data-export-ignore="true"
+          >
+            <circle
+              cx={addButtonPos.x}
+              cy={addButtonPos.y}
+              r={12}
+              className="fill-blue-500 stroke-white stroke-2 shadow-lg"
+            />
+            <g transform={`translate(${addButtonPos.x - 8}, ${addButtonPos.y - 8})`}>
+              <Plus size={16} strokeWidth={3} className="text-white" />
+            </g>
+          </g>
+        )}
 
         <CenterInfo />
       </svg>
