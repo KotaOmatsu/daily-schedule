@@ -23,7 +23,7 @@ export const Slice: React.FC<SliceProps> = ({
 }) => {
   const commonClasses = `transition-all duration-300 cursor-pointer ${
     item.type === "gap" ? "hover:fill-gray-100" : "hover:opacity-90"
-  } ${isSelected ? "stroke-blue-500 stroke-[4px] z-10 relative" : ""}`;
+  } ${isSelected ? "stroke-blue-500 stroke-[2px] z-10 relative" : ""}`;
 
   return (
     <g>
