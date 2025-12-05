@@ -242,7 +242,7 @@ export const PieChart: React.FC<PieChartProps> = ({
                 y={pos.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-[9px] fill-gray-400 font-medium select-none pointer-events-none"
+                className="text-[8px] fill-gray-400 font-medium select-none pointer-events-none"
             >
                 {i}
             </text>
