@@ -133,7 +133,7 @@ export const PieChart: React.FC<PieChartProps> = ({
     try {
       const svgClone = svgRef.current.cloneNode(true) as SVGSVGElement;
       const elementsToRemove = svgClone.querySelectorAll(
-        '[data-export-ignore="true"], [data-export-hide="true"]'
+        '[data-export-ignore="true"], [data-export-hide="true"], .export-ignore, .export-hide'
       );
       elementsToRemove.forEach((el) => el.remove());
 
@@ -259,7 +259,7 @@ export const PieChart: React.FC<PieChartProps> = ({
             return (
               <g
                 key={`handle-${index}`}
-                className="cursor-pointer group"
+                className="cursor-pointer group export-ignore"
                 onMouseDown={(e) => handleDragStart(index, e)}
                 onTouchStart={(e) => handleDragStart(index, e)}
                 style={{ cursor: "grab" }}
@@ -289,7 +289,7 @@ export const PieChart: React.FC<PieChartProps> = ({
         {/* Add Button for Selected Item */}
         {addButtonPos && selectedItem && (
           <g
-            className="cursor-pointer"
+            className="cursor-pointer export-ignore"
             onClick={(e) => {
               e.stopPropagation();
               onInsertAfter(selectedItem.id);

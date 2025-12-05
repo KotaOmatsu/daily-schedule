@@ -74,7 +74,7 @@ const Label = ({ item }: { item: ScheduleItemWithPos }) => {
         y={pos.y + 12}
         textAnchor="middle"
         dominantBaseline="middle"
-        className="text-[7px] fill-gray-500"
+        className="text-[7px] fill-gray-500 export-hide"
         data-export-hide="true"
       >
         {formatDuration(item.duration)}
