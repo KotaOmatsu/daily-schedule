@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { PieChart as PieChartIcon, List } from "lucide-react";
 import { useSchedule } from "./features/schedule/hooks/useSchedule";
 import type { ScheduleItemWithPos } from "./features/schedule/types";
 import { PieChart } from "./features/schedule/components/PieChart/PieChart";
@@ -28,6 +29,16 @@ export default function DailySchedulePlanner() {
     message: string;
     type: "save" | "success" | "error";
   } | null>(null);
+
+  // Mobile View Toggle: 'chart' or 'list'
+  const [mobileView, setMobileView] = useState<"chart" | "list">("chart");
+
+  // Auto-switch to list view on mobile when an item is selected
+  useEffect(() => {
+    if (selectedItemId) {
+      setMobileView("list");
+    }
+  }, [selectedItemId]);
 
   const showNotification = (
     message: string,
@@ -95,8 +106,34 @@ export default function DailySchedulePlanner() {
 
       <Notification notification={notification} />
 
+      {/* --- Mobile View Toggle Button --- */}
+      <div className="lg:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex bg-white rounded-full shadow-xl p-1 border border-gray-200">
+        <button
+          onClick={() => setMobileView("chart")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+            mobileView === "chart"
+              ? "bg-gray-900 text-white shadow-md"
+              : "text-gray-500 hover:bg-gray-100"
+          }`}
+        >
+          <PieChartIcon size={16} />
+          Chart
+        </button>
+        <button
+          onClick={() => setMobileView("list")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+            mobileView === "list"
+              ? "bg-gray-900 text-white shadow-md"
+              : "text-gray-500 hover:bg-gray-100"
+          }`}
+        >
+          <List size={16} />
+          List
+        </button>
+      </div>
+
       {/* --- Left Panel: Pie Chart & Summary --- */}
-      <div className="flex-1 flex flex-col items-center p-6 bg-white shadow-sm lg:border-r border-gray-200 relative overflow-y-auto custom-scrollbar">
+      <div className={`${mobileView === 'chart' ? 'flex' : 'hidden'} lg:flex flex-1 flex-col items-center p-6 bg-white shadow-sm lg:border-r border-gray-200 relative overflow-y-auto custom-scrollbar w-full h-full lg:h-auto`}>
         <PieChart
           itemsWithPos={itemsWithPos}
           setItems={setItems}
@@ -110,6 +147,7 @@ export default function DailySchedulePlanner() {
 
       {/* --- Right Panel: Editor List --- */}
       <ScheduleList
+        className={`${mobileView === 'list' ? 'flex' : 'hidden'} lg:flex w-full lg:w-96 h-full lg:h-auto`}
         items={itemsWithPos}
         selectedItemId={selectedItemId}
         onSelect={handleSelectWrapper}

@@ -17,6 +17,7 @@ interface ScheduleListProps {
   onChangeEndTime: (id: string, minutes: number) => void;
   onClearAll: () => void;
   onReorder: (sourceId: string, targetId: string) => void;
+  className?: string;
 }
 
 export const ScheduleList: React.FC<ScheduleListProps> = ({
@@ -30,6 +31,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
   onChangeEndTime,
   onClearAll,
   onReorder,
+  className,
 }) => {
   const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
 
@@ -55,7 +57,7 @@ export const ScheduleList: React.FC<ScheduleListProps> = ({
   };
 
   return (
-    <div className="w-full lg:w-96 bg-gray-50/50 flex flex-col border-l border-gray-200 shadow-xl z-20 h-full">
+    <div className={`w-full lg:w-96 bg-gray-50/50 flex flex-col border-l border-gray-200 shadow-xl z-20 h-full ${className || ""}`}>
       {/* Header */}
       <div className="px-5 py-4 bg-white border-b border-gray-100 flex justify-between items-center flex-shrink-0 shadow-sm z-10">
         <div className="flex items-center gap-2">
