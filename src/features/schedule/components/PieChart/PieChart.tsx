@@ -15,7 +15,7 @@ import { Slice, Label } from "./Slice";
 
 interface PieChartProps {
   itemsWithPos: ScheduleItemWithPos[];
-  setItems: React.Dispatch<React.SetStateAction<ScheduleItem[]>>;
+  setHistoryItems: (newPresent: ScheduleItem[] | ((curr: ScheduleItem[]) => ScheduleItem[]), commit?: boolean) => void;
   selectedItemId: string | null;
   onItemClick: (e: React.MouseEvent, item: ScheduleItemWithPos, clickMinutes: number) => void;
   onInsertAfter: (id: string) => void;
@@ -24,7 +24,7 @@ interface PieChartProps {
 
 export const PieChart: React.FC<PieChartProps> = ({
   itemsWithPos,
-  setItems,
+  setHistoryItems,
   selectedItemId,
   onItemClick,
   onInsertAfter,
@@ -63,10 +63,10 @@ export const PieChart: React.FC<PieChartProps> = ({
 
   const handleDragEnd = () => {
     setActiveDragIndex(null);
-    setItems((prev) => {
+    setHistoryItems((prev) => {
       const cleaned = prev.filter((item) => item.duration > 0);
       return mergeAdjacentGaps(cleaned);
-    });
+    }, true);
   };
 
   const handleDragMove = (e: MouseEvent | TouchEvent) => {
@@ -75,7 +75,7 @@ export const PieChart: React.FC<PieChartProps> = ({
     const minutes = getMinutesFromEvent(e);
     const snappedMinutes = Math.round(minutes / 15) * 15;
 
-    setItems((prev) => {
+    setHistoryItems((prev) => {
       const newItems = [...prev];
       const prevItemIndex = activeDragIndex;
       const nextItemIndex = (activeDragIndex + 1) % prev.length;
@@ -107,7 +107,7 @@ export const PieChart: React.FC<PieChartProps> = ({
       newItems[nextItemIndex] = { ...nextItem, duration: newNextDuration };
 
       return newItems;
-    });
+    }, false);
   };
 
   useEffect(() => {

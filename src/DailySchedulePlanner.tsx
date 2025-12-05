@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { PieChart as PieChartIcon, List } from "lucide-react";
+import { PieChart as PieChartIcon, List, Undo, Redo } from "lucide-react";
 import { useSchedule } from "./features/schedule/hooks/useSchedule";
 import type { ScheduleItemWithPos } from "./features/schedule/types";
 import { PieChart } from "./features/schedule/components/PieChart/PieChart";
@@ -12,7 +12,7 @@ export default function DailySchedulePlanner() {
   const {
     items,
     itemsWithPos,
-    setItems,
+    setHistoryItems,
     handleUpdateItem,
     handleDeleteItem,
     executeClearAll,
@@ -21,6 +21,10 @@ export default function DailySchedulePlanner() {
     handleChangeStartTime,
     handleChangeEndTime,
     reorderItems,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   } = useSchedule();
 
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -39,6 +43,22 @@ export default function DailySchedulePlanner() {
       setMobileView("list");
     }
   }, [selectedItemId]);
+
+  // Keyboard shortcuts for Undo/Redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+        if (e.shiftKey) {
+          if (canRedo) redo();
+        } else {
+          if (canUndo) undo();
+        }
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [undo, redo, canUndo, canRedo]);
 
   const showNotification = (
     message: string,
@@ -96,7 +116,7 @@ export default function DailySchedulePlanner() {
   if (!items) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans flex flex-col lg:flex-row h-screen overflow-hidden relative">
+    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans flex flex-col h-screen overflow-hidden relative">
       <ConfirmationModal
         show={showResetConfirm}
         onCancel={() => setShowResetConfirm(false)}
@@ -109,63 +129,91 @@ export default function DailySchedulePlanner() {
 
       <Notification notification={notification} />
 
-      {/* --- Mobile View Toggle Button --- */}
-      <div className="lg:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex bg-white rounded-full shadow-xl p-1 border border-gray-200">
-        <button
-          onClick={() => setMobileView("chart")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${
-            mobileView === "chart"
-              ? "bg-gray-900 text-white shadow-md"
-              : "text-gray-500 hover:bg-gray-100"
-          }`}
-        >
-          <PieChartIcon size={16} />
-          Chart
-        </button>
-        <button
-          onClick={() => setMobileView("list")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${
-            mobileView === "list"
-              ? "bg-gray-900 text-white shadow-md"
-              : "text-gray-500 hover:bg-gray-100"
-          }`}
-        >
-          <List size={16} />
-          List
-        </button>
-      </div>
+      {/* --- Header --- */}
+      <header className="bg-white border-b border-gray-200 px-4 py-2 flex justify-between items-center z-30 shadow-sm">
+        <div className="font-bold text-gray-700">Daily Schedule</div>
+        <div className="flex gap-2">
+          <button
+            onClick={undo}
+            disabled={!canUndo}
+            className={`p-2 rounded-full transition-colors ${
+              canUndo ? "text-gray-600 hover:bg-gray-100" : "text-gray-300 cursor-not-allowed"
+            }`}
+            title="元に戻す (Ctrl+Z)"
+          >
+            <Undo size={18} />
+          </button>
+          <button
+            onClick={redo}
+            disabled={!canRedo}
+            className={`p-2 rounded-full transition-colors ${
+              canRedo ? "text-gray-600 hover:bg-gray-100" : "text-gray-300 cursor-not-allowed"
+            }`}
+            title="やり直す (Ctrl+Shift+Z)"
+          >
+            <Redo size={18} />
+          </button>
+        </div>
+      </header>
 
-      {/* --- Left Panel: Pie Chart & Summary --- */}
-      <div className={`${mobileView === 'chart' ? 'flex' : 'hidden'} lg:flex flex-1 flex-col items-center p-6 bg-white shadow-sm lg:border-r border-gray-200 relative overflow-y-auto custom-scrollbar w-full h-full lg:h-auto`}>
-        <PieChart
-          itemsWithPos={itemsWithPos}
-          setItems={setItems}
+      <div className="flex flex-1 flex-col lg:flex-row overflow-hidden relative">
+        {/* --- Mobile View Toggle Button --- */}
+        <div className="lg:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex bg-white rounded-full shadow-xl p-1 border border-gray-200">
+          <button
+            onClick={() => setMobileView("chart")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+              mobileView === "chart"
+                ? "bg-gray-900 text-white shadow-md"
+                : "text-gray-500 hover:bg-gray-100"
+            }`}
+          >
+            <PieChartIcon size={16} />
+            Chart
+          </button>
+          <button
+            onClick={() => setMobileView("list")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+              mobileView === "list"
+                ? "bg-gray-900 text-white shadow-md"
+                : "text-gray-500 hover:bg-gray-100"
+            }`}
+          >
+            <List size={16} />
+            List
+          </button>
+        </div>
+
+        {/* --- Left Panel: Pie Chart & Summary --- */}
+        <div className={`${mobileView === 'chart' ? 'flex' : 'hidden'} lg:flex flex-1 flex-col items-center p-6 bg-white shadow-sm lg:border-r border-gray-200 relative overflow-y-auto custom-scrollbar w-full h-full lg:h-auto`}>
+                  <PieChart
+                    itemsWithPos={itemsWithPos}
+                    setHistoryItems={setHistoryItems}
+                    selectedItemId={selectedItemId}
+                    onItemClick={handleItemClick}
+                    onInsertAfter={handleInsertAfterWrapper}
+                    showNotification={showNotification}
+                  />
+          <Summary items={items} />
+        </div>
+
+        {/* --- Right Panel: Editor List --- */}
+        <ScheduleList
+          className={`${mobileView === 'list' ? 'flex' : 'hidden'} lg:flex w-full lg:w-96 h-full lg:h-auto`}
+          items={itemsWithPos}
           selectedItemId={selectedItemId}
-          onItemClick={handleItemClick}
+          onSelect={handleSelectWrapper}
+          onUpdate={handleUpdateItem}
+          onDelete={(id) => {
+              handleDeleteItem(id);
+              if (selectedItemId === id) setSelectedItemId(null);
+          }}
           onInsertAfter={handleInsertAfterWrapper}
-          showNotification={showNotification}
+          onChangeStartTime={handleChangeStartTime}
+          onChangeEndTime={handleChangeEndTime}
+          onClearAll={() => setShowResetConfirm(true)}
+          onReorder={reorderItems}
         />
-
-        <Summary items={items} />
       </div>
-
-      {/* --- Right Panel: Editor List --- */}
-      <ScheduleList
-        className={`${mobileView === 'list' ? 'flex' : 'hidden'} lg:flex w-full lg:w-96 h-full lg:h-auto`}
-        items={itemsWithPos}
-        selectedItemId={selectedItemId}
-        onSelect={handleSelectWrapper}
-        onUpdate={handleUpdateItem}
-        onDelete={(id) => {
-            handleDeleteItem(id);
-            if (selectedItemId === id) setSelectedItemId(null);
-        }}
-        onInsertAfter={handleInsertAfterWrapper}
-        onChangeStartTime={handleChangeStartTime}
-        onChangeEndTime={handleChangeEndTime}
-        onClearAll={() => setShowResetConfirm(true)}
-        onReorder={reorderItems}
-      />
     </div>
   );
 }

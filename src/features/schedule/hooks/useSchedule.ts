@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import type { ScheduleItem, ScheduleItemWithPos } from "../types";
 import {
   INITIAL_ITEMS,
@@ -8,9 +8,11 @@ import {
   GAP_COLOR,
 } from "../constants";
 import { mergeAdjacentGaps, generateId } from "../utils";
+import { useHistory } from "./useHistory";
 
 export const useSchedule = () => {
-  const [items, setItems] = useState<ScheduleItem[]>(() => {
+  // Initialize history with data from localStorage or default
+  const getInitialItems = (): ScheduleItem[] => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -25,7 +27,23 @@ export const useSchedule = () => {
       }
     }
     return INITIAL_ITEMS;
-  });
+  };
+
+  const {
+    state: items,
+    set: setHistoryItems,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useHistory<ScheduleItem[]>(getInitialItems());
+
+  // Wrapper for setItems to default to committing history
+  const setItems = (
+    newItems: ScheduleItem[] | ((prev: ScheduleItem[]) => ScheduleItem[])
+  ) => {
+    setHistoryItems(newItems, true);
+  };
 
   // --- Total Duration Guard ---
   useEffect(() => {
@@ -435,6 +453,12 @@ export const useSchedule = () => {
     handleInsertScheduleAfter,
     handleChangeStartTime,
     handleChangeEndTime,
-    reorderItems
+    reorderItems,
+    // History controls
+    setHistoryItems,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   };
 };
