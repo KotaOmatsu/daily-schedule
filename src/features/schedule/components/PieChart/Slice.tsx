@@ -48,16 +48,13 @@ export const Slice: React.FC<SliceProps> = ({
           onClick={(e) => onClick(e, item)}
         />
       )}
-
-      {/* Label */}
-      {item.type !== "gap" && item.duration >= 30 && <Label item={item} />}
     </g>
   );
 };
 
-const Label = ({ item }: { item: ScheduleItemWithPos }) => {
+export const Label = ({ item }: { item: ScheduleItemWithPos }) => {
   const midAngle = minutesToAngle(item.start + item.duration / 2);
-  const pos = getCoordinatesForAngle(midAngle, -RADIUS * 0.35);
+  const pos = getCoordinatesForAngle(midAngle, -RADIUS * 0.3); // Move slightly outwards
   return (
     <g className="pointer-events-none">
       <text
@@ -65,7 +62,7 @@ const Label = ({ item }: { item: ScheduleItemWithPos }) => {
         y={pos.y}
         textAnchor="middle"
         dominantBaseline="middle"
-        className="text-[11px] font-bold fill-gray-800 drop-shadow-sm"
+        className="text-[9px] font-bold fill-gray-800 drop-shadow-sm text-label-title"
       >
         {item.title}
       </text>
@@ -74,7 +71,8 @@ const Label = ({ item }: { item: ScheduleItemWithPos }) => {
         y={pos.y + 12}
         textAnchor="middle"
         dominantBaseline="middle"
-        className="text-[9px] fill-gray-500"
+        className="text-[9px] fill-gray-500 export-hide text-label-duration"
+        data-export-hide="true"
       >
         {formatDuration(item.duration)}
       </text>

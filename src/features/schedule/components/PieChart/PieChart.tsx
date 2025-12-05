@@ -11,8 +11,7 @@ import {
   getCoordinatesForAngle,
   mergeAdjacentGaps,
 } from "../../utils";
-import { Slice } from "./Slice";
-import { CenterInfo } from "./CenterInfo";
+import { Slice, Label } from "./Slice";
 
 interface PieChartProps {
   itemsWithPos: ScheduleItemWithPos[];
@@ -133,9 +132,60 @@ export const PieChart: React.FC<PieChartProps> = ({
     try {
       const svgClone = svgRef.current.cloneNode(true) as SVGSVGElement;
       const elementsToRemove = svgClone.querySelectorAll(
-        '[data-export-ignore="true"]'
+        '[data-export-ignore="true"], [data-export-hide="true"], .export-ignore, .export-hide'
       );
       elementsToRemove.forEach((el) => el.remove());
+
+      // Apply font size and position adjustments for export image
+      const styleElement = svgClone.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'style');
+      styleElement.textContent = `
+        .text-label-title {
+          font-size: 6px !important;
+          transform: translateY(-2px); /* Adjust vertical position */
+        }
+        .text-label-duration {
+          font-size: 4px !important;
+        }
+        .fill-gray-400.font-medium {
+          font-size: 6px !important;
+          transform: translateY(-2px); /* Adjust vertical position */
+        }
+        .tick-mark {
+          stroke: #d1d5db !important; /* gray-300 */
+          stroke-width: 1px !important;
+        }
+      `;
+      svgClone.prepend(styleElement);
+
+      // Adjust title Y position after duration is removed
+      svgClone.querySelectorAll('.text-label-title').forEach((el) => {
+          const currentY = parseFloat(el.getAttribute('y') || '0');
+          el.setAttribute('y', (currentY + 6).toString()); // Shift down by half of removed duration text offset
+      });
+
+      // Recalculate time marker positions to be closer to the circle for export
+      svgClone.querySelectorAll('.fill-gray-400.font-medium').forEach((el, i) => {
+          const angle = (i / 24) * 360;
+          // Use imported utility for consistency
+          const { x, y } = getCoordinatesForAngle(angle, 15); // Closer offset (15)
+          
+          el.setAttribute('x', x.toString());
+          el.setAttribute('y', y.toString());
+      });
+
+      // Recalculate tick mark positions for export
+      svgClone.querySelectorAll('.tick-mark').forEach((el, i) => {
+          const angle = (i / 24) * 360;
+          
+          // Use imported utility for consistency
+          const start = getCoordinatesForAngle(angle, 2);
+          const end = getCoordinatesForAngle(angle, 8);
+
+          el.setAttribute('x1', start.x.toString());
+          el.setAttribute('y1', start.y.toString());
+          el.setAttribute('x2', end.x.toString());
+          el.setAttribute('y2', end.y.toString());
+      });
 
       const serializer = new XMLSerializer();
       const svgString = serializer.serializeToString(svgClone);
@@ -147,19 +197,22 @@ export const PieChart: React.FC<PieChartProps> = ({
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const scale = 2;
+        const exportScaleFactor = 2 / 3; // For overall image size reduction
+        const baseScale = 2; // Original high-resolution export scale
+        const finalScale = baseScale * exportScaleFactor; // New effective scale for the image
+
         const width = svgRef.current!.clientWidth;
         const height = svgRef.current!.clientHeight;
 
-        canvas.width = width * scale;
-        canvas.height = height * scale;
+        canvas.width = width * finalScale;
+        canvas.height = height * finalScale;
 
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        ctx.scale(scale, scale);
+        ctx.scale(finalScale, finalScale); // Apply the new effective scale
         ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillRect(0, 0, width, height); // Fill original logical size before scaling down
         ctx.drawImage(img, 0, 0, width, height);
 
         canvas.toBlob(async (blob) => {
@@ -200,7 +253,7 @@ export const PieChart: React.FC<PieChartProps> = ({
   let addButtonPos = null;
   if (selectedItem && activeDragIndex === null) {
     const endAngle = minutesToAngle(selectedItem.start + selectedItem.duration);
-    addButtonPos = getCoordinatesForAngle(endAngle, -RADIUS / 3); // Position 4px more central
+    addButtonPos = getCoordinatesForAngle(endAngle, -RADIUS / 2); // Position at half the radius length
   }
 
   return (
@@ -208,9 +261,8 @@ export const PieChart: React.FC<PieChartProps> = ({
       <svg
         ref={svgRef}
         viewBox={`0 0 ${CENTER * 2} ${CENTER * 2}`}
-        className="w-full h-full drop-shadow-2xl overflow-visible"
+        className="w-full h-full overflow-visible"
       >
-        <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="white" />
         {React.useMemo(() => {
           return itemsWithPos
             .map((item) => ({
@@ -230,11 +282,36 @@ export const PieChart: React.FC<PieChartProps> = ({
             }}
           />
         ))}
+
+        {/* Labels - Rendered after slices to ensure they are on top */}
+        {itemsWithPos.map((item) => {
+          if (item.type !== "gap" && item.duration >= 30) {
+            return <Label key={`label-${item.id}`} item={item} />;
+          }
+          return null;
+        })}
+        
+        {/* Tick Marks */}
+        {Array.from({ length: 24 }).map((_, i) => {
+            const angle = (i / 24) * 360;
+            const start = getCoordinatesForAngle(angle, 2);
+            const end = getCoordinatesForAngle(angle, 8);
+            return (
+              <line
+                key={`tick-${i}`}
+                x1={start.x}
+                y1={start.y}
+                x2={end.x}
+                y2={end.y}
+                className="stroke-gray-300 stroke-1 tick-mark"
+              />
+            );
+        })}
         
         {/* Markers */}
         {Array.from({ length: 24 }).map((_, i) => {
             const angle = (i / 24) * 360;
-            const pos = getCoordinatesForAngle(angle, 25);
+            const pos = getCoordinatesForAngle(angle, 25); // Revert to original offset
             return (
             <text
                 key={i}
@@ -242,7 +319,7 @@ export const PieChart: React.FC<PieChartProps> = ({
                 y={pos.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-[10px] fill-gray-400 font-medium select-none pointer-events-none"
+                className="text-[10px] fill-gray-400 font-medium select-none pointer-events-none" // Revert to original font size
             >
                 {i}
             </text>
@@ -259,7 +336,7 @@ export const PieChart: React.FC<PieChartProps> = ({
             return (
               <g
                 key={`handle-${index}`}
-                className="cursor-pointer group"
+                className="cursor-pointer group export-ignore"
                 onMouseDown={(e) => handleDragStart(index, e)}
                 onTouchStart={(e) => handleDragStart(index, e)}
                 style={{ cursor: "grab" }}
@@ -284,12 +361,12 @@ export const PieChart: React.FC<PieChartProps> = ({
             );
           })}
 
-        <CenterInfo />
+        {/* CenterInfo removed as per request to fill the center */}
 
         {/* Add Button for Selected Item */}
         {addButtonPos && selectedItem && (
           <g
-            className="cursor-pointer"
+            className="cursor-pointer export-ignore"
             onClick={(e) => {
               e.stopPropagation();
               onInsertAfter(selectedItem.id);
