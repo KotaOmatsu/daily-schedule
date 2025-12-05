@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 interface HistoryState<T> {
   past: T[];
@@ -13,6 +13,11 @@ export const useHistory = <T>(initialState: T) => {
     future: [],
   });
 
+  // Keep track of the last state that was effectively "committed" to history (or is the initial state).
+  // This is crucial for continuous updates (like dragging) where we update 'present' multiple times
+  // but only want to save the state *before* the drag started into 'past' when we finally commit.
+  const lastCommittedRef = useRef<T>(initialState);
+
   const canUndo = state.past.length > 0;
   const canRedo = state.future.length > 0;
 
@@ -22,6 +27,8 @@ export const useHistory = <T>(initialState: T) => {
 
       const previous = currentState.past[currentState.past.length - 1];
       const newPast = currentState.past.slice(0, currentState.past.length - 1);
+
+      lastCommittedRef.current = previous; // Update reference
 
       return {
         past: newPast,
@@ -37,6 +44,8 @@ export const useHistory = <T>(initialState: T) => {
 
       const next = currentState.future[0];
       const newFuture = currentState.future.slice(1);
+
+      lastCommittedRef.current = next; // Update reference
 
       return {
         past: [...currentState.past, currentState.present],
@@ -58,18 +67,25 @@ export const useHistory = <T>(initialState: T) => {
         if (nextPresent === currentState.present) return currentState;
 
         if (commit) {
+          // When committing, we push the *last committed state* to past, not the potentially transient 'present'.
+          // This handles the case: A (committed) -> B (transient) -> C (transient) -> D (commit).
+          // We want history to be A -> D. So 'past' gets A.
+          // If it was simple: A (committed) -> D (commit). 'past' gets A.
+          // So it's consistent.
+          
+          const newPast = [...currentState.past, lastCommittedRef.current];
+          lastCommittedRef.current = nextPresent; // Update reference to the new committed state
+
           return {
-            past: [...currentState.past, currentState.present],
+            past: newPast,
             present: nextPresent,
             future: [], // Clear future on new change
           };
         } else {
-          // Update present without adding to history (for continuous edits like dragging)
-          // Future is preserved? Usually continuous edits clear future if they deviate,
-          // but for drag, we might want to clear future only when committed.
-          // But standard behavior: any change clears future.
-          // However, if we are just updating 'present' temporarily, maybe we keep future?
-          // No, if we change present, the future path is invalid.
+          // Transient update (e.g. dragging).
+          // We update 'present' so the UI updates, but we DO NOT touch 'past' or 'lastCommittedRef'.
+          // We also assume future should be cleared or kept?
+          // Usually, any deviation clears future.
           return {
             ...currentState,
             present: nextPresent,
@@ -81,23 +97,6 @@ export const useHistory = <T>(initialState: T) => {
     []
   );
 
-  // Explicitly commit the current state to history (useful after continuous edits)
-  // But wait, `set` with `commit: false` loses the 'previous' present.
-  // If we do:
-  // 1. set(val1, true) -> past: [prev], present: val1
-  // 2. set(val2, false) -> past: [prev], present: val2 (We lost val1 as a history step? No, val1 was 'present', now it's gone)
-  // This is fine for continuous edits if we consider the *start* of the edit as the save point.
-  // But `past` should contain the state *before* the continuous edit started.
-  // Example:
-  // Start: Present=A, Past=[]
-  // Drag Start: Save A?
-  // Drag Move: Present=B (commit=false) -> Past=[]? If we want to undo to A, A must be in Past.
-  // So, the *first* update of a continuous sequence must push to history. Subsequent ones should not.
-  
-  // Revised Strategy:
-  // We need a way to say "This is a new history entry" vs "Update current entry".
-  // `set(val, { newEntry: boolean })`
-  
   return {
     state: state.present,
     past: state.past,
