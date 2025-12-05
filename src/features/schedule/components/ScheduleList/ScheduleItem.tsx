@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { GripVertical as DragHandleIcon, Trash2, Plus } from "lucide-react";
 import type {
   ScheduleItemWithPos,
@@ -39,6 +39,7 @@ export const ScheduleItem: React.FC<ScheduleItemProps> = ({
   onDrop,
   onDragEnd,
 }) => {
+  const rowRef = useRef<HTMLDivElement>(null);
   const isGap = item.type === "gap";
   if (isGap) return null;
 
@@ -58,7 +59,12 @@ export const ScheduleItem: React.FC<ScheduleItemProps> = ({
   };
 
   return (
-    <div className="relative group/item">
+    <div 
+      ref={rowRef}
+      className="relative group/item"
+      onDragOver={(e) => onDragOver(e, item.id)}
+      onDrop={(e) => onDrop(e, item.id)}
+    >
       {/* Drag Indicator Bar */}
       {dragOverItemId === item.id && (
         <div className="absolute top-0 left-0 w-full h-1 bg-blue-400 rounded-full z-30 pointer-events-none transform -translate-y-1/2" />
@@ -83,9 +89,12 @@ export const ScheduleItem: React.FC<ScheduleItemProps> = ({
         <div 
           className="absolute top-1/2 left-2 -translate-y-1/2 p-1 text-gray-300 cursor-grab hover:text-gray-500 active:cursor-grabbing"
           draggable
-          onDragStart={(e) => onDragStart(e, item.id)}
-          onDragOver={(e) => onDragOver(e, item.id)}
-          onDrop={(e) => onDrop(e, item.id)}
+          onDragStart={(e) => {
+            if (rowRef.current) {
+              e.dataTransfer.setDragImage(rowRef.current, 0, 0);
+            }
+            onDragStart(e, item.id);
+          }}
           onDragEnd={onDragEnd}
         >
           <DragHandleIcon size={14} />
