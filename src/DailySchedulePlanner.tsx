@@ -63,6 +63,21 @@ export default function DailySchedulePlanner() {
       if (newId) setSelectedItemId(newId);
   }
 
+  const handleSelectWrapper = (id: string | null) => {
+    // If attempting to deselect an item (id is null)
+    if (id === null) {
+      if (selectedItemId) {
+        const currentSelectedItem = items.find((item) => item.id === selectedItemId);
+        if (currentSelectedItem && currentSelectedItem.type === "activity" && currentSelectedItem.title.trim() === "") {
+          showNotification("予定名を記入してください。", "error");
+          // Prevent deselection
+          return;
+        }
+      }
+    }
+    setSelectedItemId(id);
+  };
+
   // Ensure items is never null before render (hook handles initialization but safe check)
   if (!items) return null;
 
@@ -97,7 +112,7 @@ export default function DailySchedulePlanner() {
       <ScheduleList
         items={itemsWithPos}
         selectedItemId={selectedItemId}
-        onSelect={setSelectedItemId}
+        onSelect={handleSelectWrapper}
         onUpdate={handleUpdateItem}
         onDelete={(id) => {
             handleDeleteItem(id);
