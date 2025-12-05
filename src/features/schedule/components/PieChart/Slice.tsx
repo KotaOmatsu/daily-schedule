@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import React from "react";
 import type { ScheduleItemWithPos } from "../../types";
 import {
   createSlicePath,
@@ -14,7 +13,6 @@ interface SliceProps {
   isSingleItem: boolean;
   isSelected: boolean;
   onClick: (e: React.MouseEvent, item: ScheduleItemWithPos) => void;
-  onInsertAfter: (id: string) => void;
 }
 
 export const Slice: React.FC<SliceProps> = ({
@@ -22,24 +20,13 @@ export const Slice: React.FC<SliceProps> = ({
   isSingleItem,
   isSelected,
   onClick,
-  onInsertAfter,
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
   const commonClasses = `transition-all duration-300 cursor-pointer ${
     item.type === "gap" ? "hover:fill-gray-100" : "hover:opacity-90"
   } ${isSelected ? "stroke-blue-500 stroke-[2px] z-10 relative" : ""}`;
 
-  // Calculate position for the "+" button (end of the slice)
-  const endAngle = minutesToAngle(item.start + item.duration);
-  // Position closer to ensure overlap (RADIUS=120, button radius=10, pos=128 -> overlap of 2px)
-  const buttonPos = getCoordinatesForAngle(endAngle, RADIUS + 8);
-
   return (
-    <g
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <g>
       {isSingleItem ? (
         <circle
           cx={CENTER}
@@ -64,35 +51,6 @@ export const Slice: React.FC<SliceProps> = ({
 
       {/* Label */}
       {item.type !== "gap" && item.duration >= 30 && <Label item={item} />}
-
-      {/* Add Button */}
-      <g
-        className="transition-opacity duration-200 cursor-pointer"
-        style={{
-          opacity: isHovered ? 1 : 0,
-          pointerEvents: isHovered ? "all" : "none",
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          onInsertAfter(item.id);
-        }}
-      >
-        {/* Invisible hit area to make hovering easier */}
-        <circle cx={buttonPos.x} cy={buttonPos.y} r={14} fill="transparent" />
-
-        {/* Visible Button Background */}
-        <circle
-          cx={buttonPos.x}
-          cy={buttonPos.y}
-          r={10}
-          className="fill-white stroke-blue-500 stroke-1 shadow-sm hover:fill-blue-50"
-        />
-
-        {/* Icon */}
-        <g transform={`translate(${buttonPos.x - 7}, ${buttonPos.y - 7})`}>
-          <Plus size={14} strokeWidth={3} className="text-blue-500" />
-        </g>
-      </g>
     </g>
   );
 };

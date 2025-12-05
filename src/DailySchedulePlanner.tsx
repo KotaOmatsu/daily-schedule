@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { PieChart as PieChartIcon, List } from "lucide-react";
+import { PieChart as PieChartIcon, List, Plus } from "lucide-react";
 import { useSchedule } from "./features/schedule/hooks/useSchedule";
 import type { ScheduleItemWithPos } from "./features/schedule/types";
 import { PieChart } from "./features/schedule/components/PieChart/PieChart";
@@ -140,9 +140,18 @@ export default function DailySchedulePlanner() {
           setItems={setItems}
           selectedItemId={selectedItemId}
           onItemClick={handleItemClick}
-          onInsertAfter={handleInsertAfterWrapper}
           showNotification={showNotification}
         />
+
+        {selectedItemId && (
+          <button
+            onClick={() => handleInsertAfterWrapper(selectedItemId)}
+            className="mb-6 bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold py-2 px-6 rounded-full shadow-md flex items-center gap-2 transition-all transform hover:scale-105"
+          >
+            <Plus size={16} />
+            選択中の予定の後に追加
+          </button>
+        )}
 
         <Summary items={items} />
       </div>
