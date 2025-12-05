@@ -200,7 +200,7 @@ export const PieChart: React.FC<PieChartProps> = ({
   let addButtonPos = null;
   if (selectedItem && activeDragIndex === null) {
     const endAngle = minutesToAngle(selectedItem.start + selectedItem.duration);
-    addButtonPos = getCoordinatesForAngle(endAngle, -RADIUS / 4); // Position a bit further from center
+    addButtonPos = getCoordinatesForAngle(endAngle, -RADIUS / 8); // Position slightly more central
   }
 
   return (
@@ -289,7 +289,7 @@ export const PieChart: React.FC<PieChartProps> = ({
         {/* Add Button for Selected Item */}
         {addButtonPos && selectedItem && (
           <g
-            className="cursor-pointer transition-transform hover:scale-110"
+            className="cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               onInsertAfter(selectedItem.id);
@@ -299,11 +299,11 @@ export const PieChart: React.FC<PieChartProps> = ({
             <circle
               cx={addButtonPos.x}
               cy={addButtonPos.y}
-              r={10}
+              r={8}
               className="fill-blue-500 stroke-white stroke-2 shadow-lg"
             />
-            <g transform={`translate(${addButtonPos.x - 7}, ${addButtonPos.y - 7})`}>
-              <Plus size={14} strokeWidth={3} color="white" />
+            <g transform={`translate(${addButtonPos.x - 6}, ${addButtonPos.y - 6})`}>
+              <Plus size={12} strokeWidth={3} color="white" />
             </g>
           </g>
         )}
