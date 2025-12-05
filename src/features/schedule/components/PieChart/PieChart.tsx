@@ -190,19 +190,22 @@ export const PieChart: React.FC<PieChartProps> = ({
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const scale = 2;
+        const exportScaleFactor = 2 / 3; // For overall image size reduction
+        const baseScale = 2; // Original high-resolution export scale
+        const finalScale = baseScale * exportScaleFactor; // New effective scale for the image
+
         const width = svgRef.current!.clientWidth;
         const height = svgRef.current!.clientHeight;
 
-        canvas.width = width * scale;
-        canvas.height = height * scale;
+        canvas.width = width * finalScale;
+        canvas.height = height * finalScale;
 
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        ctx.scale(scale, scale);
+        ctx.scale(finalScale, finalScale); // Apply the new effective scale
         ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, width, height);
+        ctx.fillRect(0, 0, width, height); // Fill original logical size before scaling down
         ctx.drawImage(img, 0, 0, width, height);
 
         canvas.toBlob(async (blob) => {
