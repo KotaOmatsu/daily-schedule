@@ -201,24 +201,25 @@ export const PieChart: React.FC<PieChartProps> = ({
         className="w-full h-full drop-shadow-2xl"
       >
         <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="white" />
-        {itemsWithPos
-          .map((item) => ({
-            ...item,
-            isSelected: selectedItemId === item.id,
-          }))
-          .sort((a, b) => (a.isSelected ? 1 : 0) - (b.isSelected ? 1 : 0))
-          .map((item) => (
-            <Slice
-              key={item.id}
-              item={item}
-              isSingleItem={itemsWithPos.length === 1}
-              isSelected={item.isSelected}
-              onClick={(e, item) => {
-                const clickMinutes = getMinutesFromEvent(e);
-                onItemClick(e, item, clickMinutes);
-              }}
-            />
-          ))}
+        {React.useMemo(() => {
+          return itemsWithPos
+            .map((item) => ({
+              ...item,
+              isSelected: selectedItemId === item.id,
+            }))
+            .sort((a, b) => (a.isSelected ? 1 : 0) - (b.isSelected ? 1 : 0));
+        }, [itemsWithPos, selectedItemId]).map((item) => (
+          <Slice
+            key={item.id}
+            item={item}
+            isSingleItem={itemsWithPos.length === 1}
+            isSelected={item.isSelected}
+            onClick={(e, item) => {
+              const clickMinutes = getMinutesFromEvent(e);
+              onItemClick(e, item, clickMinutes);
+            }}
+          />
+        ))}
         
         {/* Markers */}
         {Array.from({ length: 24 }).map((_, i) => {

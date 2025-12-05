@@ -48,6 +48,22 @@ export default function DailySchedulePlanner() {
     setTimeout(() => setNotification(null), 3000);
   };
 
+  const handleSelectWrapper = (id: string | null) => {
+    // Validate current item before changing selection (unless selecting the same item)
+    if (selectedItemId && selectedItemId !== id) {
+      const currentSelectedItem = items.find((item) => item.id === selectedItemId);
+      if (
+        currentSelectedItem &&
+        currentSelectedItem.type === "activity" &&
+        !currentSelectedItem.title.trim()
+      ) {
+        showNotification("予定名を記入してください。", "error");
+        return;
+      }
+    }
+    setSelectedItemId(id);
+  };
+
   const handleItemClick = (
     _e: React.MouseEvent,
     item: ScheduleItemWithPos,
@@ -62,31 +78,16 @@ export default function DailySchedulePlanner() {
         clickMinutes
       );
       if (newId) {
-        setSelectedItemId(newId);
+        handleSelectWrapper(newId);
       }
     } else {
-      setSelectedItemId(item.id);
+      handleSelectWrapper(item.id);
     }
   };
 
   const handleInsertAfterWrapper = (id: string) => {
-      const newId = handleInsertScheduleAfter(id);
-      if (newId) setSelectedItemId(newId);
-  }
-
-  const handleSelectWrapper = (id: string | null) => {
-    // If attempting to deselect an item (id is null)
-    if (id === null) {
-      if (selectedItemId) {
-        const currentSelectedItem = items.find((item) => item.id === selectedItemId);
-        if (currentSelectedItem && currentSelectedItem.type === "activity" && currentSelectedItem.title.trim() === "") {
-          showNotification("予定名を記入してください。", "error");
-          // Prevent deselection
-          return;
-        }
-      }
-    }
-    setSelectedItemId(id);
+    const newId = handleInsertScheduleAfter(id);
+    if (newId) handleSelectWrapper(newId);
   };
 
   // Ensure items is never null before render (hook handles initialization but safe check)
