@@ -50,9 +50,7 @@ export const Slice: React.FC<SliceProps> = ({
       )}
 
       {/* Label */}
-      {item.type !== "gap" && item.duration >= 30 && (
-        <Label item={item} />
-      )}
+      {item.type !== "gap" && item.duration >= 30 && <Label item={item} />}
     </g>
   );
 };

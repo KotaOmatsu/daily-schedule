@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Copy, Download } from "lucide-react";
+import { Copy, Download, Plus } from "lucide-react";
 import type { ScheduleItem, ScheduleItemWithPos } from "../../types";
 import {
   CENTER,
@@ -19,6 +19,7 @@ interface PieChartProps {
   setItems: React.Dispatch<React.SetStateAction<ScheduleItem[]>>;
   selectedItemId: string | null;
   onItemClick: (e: React.MouseEvent, item: ScheduleItemWithPos, clickMinutes: number) => void;
+  onInsertAfter: (id: string) => void;
   showNotification: (message: string, type?: "save" | "success" | "error") => void;
 }
 
@@ -27,6 +28,7 @@ export const PieChart: React.FC<PieChartProps> = ({
   setItems,
   selectedItemId,
   onItemClick,
+  onInsertAfter,
   showNotification,
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -193,12 +195,20 @@ export const PieChart: React.FC<PieChartProps> = ({
     }
   };
 
+  // Calculate button position for selected item
+  const selectedItem = selectedItemId ? itemsWithPos.find(i => i.id === selectedItemId) : null;
+  let addButtonPos = null;
+  if (selectedItem && activeDragIndex === null) {
+    const endAngle = minutesToAngle(selectedItem.start + selectedItem.duration);
+    addButtonPos = getCoordinatesForAngle(endAngle, -RADIUS / 3); // Position 4px more central
+  }
+
   return (
     <div className="relative w-full max-w-[400px] aspect-square select-none mb-8 mt-4 flex-shrink-0 group/chart">
       <svg
         ref={svgRef}
         viewBox={`0 0 ${CENTER * 2} ${CENTER * 2}`}
-        className="w-full h-full drop-shadow-2xl"
+        className="w-full h-full drop-shadow-2xl overflow-visible"
       >
         <circle cx={CENTER} cy={CENTER} r={RADIUS} fill="white" />
         {React.useMemo(() => {
@@ -275,6 +285,28 @@ export const PieChart: React.FC<PieChartProps> = ({
           })}
 
         <CenterInfo />
+
+        {/* Add Button for Selected Item */}
+        {addButtonPos && selectedItem && (
+          <g
+            className="cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              onInsertAfter(selectedItem.id);
+            }}
+            data-export-ignore="true"
+          >
+            <circle
+              cx={addButtonPos.x}
+              cy={addButtonPos.y}
+              r={8}
+              className="fill-blue-500 stroke-white stroke-2 shadow-lg"
+            />
+            <g transform={`translate(${addButtonPos.x - 6}, ${addButtonPos.y - 6})`}>
+              <Plus size={12} strokeWidth={3} color="white" />
+            </g>
+          </g>
+        )}
       </svg>
       
       <div
