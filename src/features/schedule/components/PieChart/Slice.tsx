@@ -48,14 +48,11 @@ export const Slice: React.FC<SliceProps> = ({
           onClick={(e) => onClick(e, item)}
         />
       )}
-
-      {/* Label */}
-      {item.type !== "gap" && item.duration >= 30 && <Label item={item} />}
     </g>
   );
 };
 
-const Label = ({ item }: { item: ScheduleItemWithPos }) => {
+export const Label = ({ item }: { item: ScheduleItemWithPos }) => {
   const midAngle = minutesToAngle(item.start + item.duration / 2);
   const pos = getCoordinatesForAngle(midAngle, -RADIUS * 0.35); // Revert to original position
   return (
