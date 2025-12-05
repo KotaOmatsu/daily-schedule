@@ -180,93 +180,90 @@ export const useSchedule = () => {
 
   const handleInsertScheduleAfter = (prevItemId: string): string | null => {
     const newItemId = generateId();
-    let success = false;
 
-    setItems((prev) => {
-      const index = prev.findIndex((i) => i.id === prevItemId);
-      if (index === -1) return prev;
+    const index = items.findIndex((i) => i.id === prevItemId);
+    if (index === -1) return null;
 
-      const durationToInsert = 15;
-      const insertionIndex = index + 1;
+    const durationToInsert = 15;
+    const insertionIndex = index + 1;
 
-      const newItems = [...prev];
-      let remainingToReduce = durationToInsert;
+    const newItems = [...items];
+    let remainingToReduce = durationToInsert;
 
-      const reductions = new Map<number, number>();
+    const reductions = new Map<number, number>();
 
+    for (let offset = 0; offset < newItems.length; offset++) {
+      if (remainingToReduce <= 0) break;
+
+      const targetIndex = (insertionIndex + offset) % newItems.length;
+      const targetItem = newItems[targetIndex];
+
+      if (targetItem.type === "gap") {
+        const available = targetItem.duration;
+        const take = Math.min(available, remainingToReduce);
+
+        if (take > 0) {
+          reductions.set(
+            targetIndex,
+            (reductions.get(targetIndex) || 0) + take
+          );
+          remainingToReduce -= take;
+        }
+      }
+    }
+
+    if (remainingToReduce > 0) {
       for (let offset = 0; offset < newItems.length; offset++) {
         if (remainingToReduce <= 0) break;
 
         const targetIndex = (insertionIndex + offset) % newItems.length;
         const targetItem = newItems[targetIndex];
 
-        if (targetItem.type === "gap") {
-          const available = targetItem.duration;
+        if (targetItem.type === "activity") {
+          const minDuration = 15;
+          const currentReduction = reductions.get(targetIndex) || 0;
+          const available = Math.max(
+            0,
+            targetItem.duration - currentReduction - minDuration
+          );
+
           const take = Math.min(available, remainingToReduce);
 
           if (take > 0) {
-            reductions.set(
-              targetIndex,
-              (reductions.get(targetIndex) || 0) + take
-            );
+            reductions.set(targetIndex, currentReduction + take);
             remainingToReduce -= take;
           }
         }
       }
+    }
 
-      if (remainingToReduce > 0) {
-        for (let offset = 0; offset < newItems.length; offset++) {
-          if (remainingToReduce <= 0) break;
+    if (remainingToReduce > 0) {
+      alert("予定を挿入する十分なスペース（空き時間）がありません。");
+      return null;
+    }
 
-          const targetIndex = (insertionIndex + offset) % newItems.length;
-          const targetItem = newItems[targetIndex];
-
-          if (targetItem.type === "activity") {
-            const minDuration = 15;
-            const currentReduction = reductions.get(targetIndex) || 0;
-            const available = Math.max(
-              0,
-              targetItem.duration - currentReduction - minDuration
-            );
-
-            const take = Math.min(available, remainingToReduce);
-
-            if (take > 0) {
-              reductions.set(targetIndex, currentReduction + take);
-              remainingToReduce -= take;
-            }
-          }
-        }
-      }
-
-      if (remainingToReduce > 0) {
-        // Alert logic should be handled by the caller, but we can return false/null
-        return prev;
-      }
-
-      reductions.forEach((reduceAmount, idx) => {
-        newItems[idx] = {
-          ...newItems[idx],
-          duration: newItems[idx].duration - reduceAmount,
-        };
-      });
-
-      const newItem: ScheduleItem = {
-        id: newItemId,
-        type: "activity",
-        title: "",
-        color: COLORS[Math.floor(Math.random() * (COLORS.length - 1))],
-        duration: durationToInsert,
+    reductions.forEach((reduceAmount, idx) => {
+      newItems[idx] = {
+        ...newItems[idx],
+        duration: newItems[idx].duration - reduceAmount,
       };
-
-      newItems.splice(insertionIndex, 0, newItem);
-      
-      success = true;
-      const cleaned = newItems.filter((i) => i.duration > 0);
-      return mergeAdjacentGaps(cleaned);
     });
 
-    return success ? newItemId : null;
+    const newItem: ScheduleItem = {
+      id: newItemId,
+      type: "activity",
+      title: "",
+      color: COLORS[Math.floor(Math.random() * (COLORS.length - 1))],
+      duration: durationToInsert,
+    };
+
+    newItems.splice(insertionIndex, 0, newItem);
+
+    const cleaned = newItems.filter((i) => i.duration > 0);
+    const merged = mergeAdjacentGaps(cleaned);
+
+    setItems(merged);
+    return newItemId;
   };
 
     const handleChangeStartTime = (id: string, newStartMinutes: number) => {
