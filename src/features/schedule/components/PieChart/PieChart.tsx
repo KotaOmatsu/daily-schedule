@@ -11,7 +11,7 @@ import {
   getCoordinatesForAngle,
   mergeAdjacentGaps,
 } from "../../utils";
-import { Slice } from "./Slice";
+import { Slice, Label } from "./Slice";
 
 interface PieChartProps {
   itemsWithPos: ScheduleItemWithPos[];
@@ -269,6 +269,14 @@ export const PieChart: React.FC<PieChartProps> = ({
             }}
           />
         ))}
+
+        {/* Labels - Rendered after slices to ensure they are on top */}
+        {itemsWithPos.map((item) => {
+          if (item.type !== "gap" && item.duration >= 30) {
+            return <Label key={`label-${item.id}`} item={item} />;
+          }
+          return null;
+        })}
         
         {/* Markers */}
         {Array.from({ length: 24 }).map((_, i) => {
