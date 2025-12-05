@@ -150,6 +150,9 @@ export const PieChart: React.FC<PieChartProps> = ({
           font-size: 6px !important;
           transform: translateY(-2px); /* Adjust vertical position */
         }
+        line {
+          stroke-width: 0.5px !important;
+        }
       `;
       svgClone.prepend(styleElement);
 
@@ -248,7 +251,7 @@ export const PieChart: React.FC<PieChartProps> = ({
       <svg
         ref={svgRef}
         viewBox={`0 0 ${CENTER * 2} ${CENTER * 2}`}
-        className="w-full h-full drop-shadow-2xl overflow-visible"
+        className="w-full h-full overflow-visible"
       >
         {React.useMemo(() => {
           return itemsWithPos
@@ -276,6 +279,23 @@ export const PieChart: React.FC<PieChartProps> = ({
             return <Label key={`label-${item.id}`} item={item} />;
           }
           return null;
+        })}
+        
+        {/* Tick Marks */}
+        {Array.from({ length: 24 }).map((_, i) => {
+            const angle = (i / 24) * 360;
+            const start = getCoordinatesForAngle(angle, 2);
+            const end = getCoordinatesForAngle(angle, 8);
+            return (
+              <line
+                key={`tick-${i}`}
+                x1={start.x}
+                y1={start.y}
+                x2={end.x}
+                y2={end.y}
+                className="stroke-gray-300 stroke-1"
+              />
+            );
         })}
         
         {/* Markers */}
