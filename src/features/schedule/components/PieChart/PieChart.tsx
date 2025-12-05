@@ -166,13 +166,8 @@ export const PieChart: React.FC<PieChartProps> = ({
       // Recalculate time marker positions to be closer to the circle for export
       svgClone.querySelectorAll('.fill-gray-400.font-medium').forEach((el, i) => {
           const angle = (i / 24) * 360;
-          // Calculate new position with smaller offset (15 instead of 25)
-          // Duplicate logic from getCoordinatesForAngle locally since we can't import it easily inside this scope if it wasn't bundled, 
-          // but we can just reproduce the math.
-          const rad = (angle - 90) * (Math.PI / 180);
-          const r = RADIUS + 15; // Closer offset
-          const x = CENTER + r * Math.cos(rad);
-          const y = CENTER + r * Math.sin(rad);
+          // Use imported utility for consistency
+          const { x, y } = getCoordinatesForAngle(angle, 15); // Closer offset (15)
           
           el.setAttribute('x', x.toString());
           el.setAttribute('y', y.toString());
@@ -181,22 +176,15 @@ export const PieChart: React.FC<PieChartProps> = ({
       // Recalculate tick mark positions for export
       svgClone.querySelectorAll('.tick-mark').forEach((el, i) => {
           const angle = (i / 24) * 360;
-          const rad = (angle - 90) * (Math.PI / 180);
           
-          // Use same offsets as browser view or adjusted for export if needed
-          // Browser: start=RADIUS+2, end=RADIUS+8
-          const rStart = RADIUS + 2;
-          const rEnd = RADIUS + 8;
+          // Use imported utility for consistency
+          const start = getCoordinatesForAngle(angle, 2);
+          const end = getCoordinatesForAngle(angle, 8);
 
-          const x1 = CENTER + rStart * Math.cos(rad);
-          const y1 = CENTER + rStart * Math.sin(rad);
-          const x2 = CENTER + rEnd * Math.cos(rad);
-          const y2 = CENTER + rEnd * Math.sin(rad);
-
-          el.setAttribute('x1', x1.toString());
-          el.setAttribute('y1', y1.toString());
-          el.setAttribute('x2', x2.toString());
-          el.setAttribute('y2', y2.toString());
+          el.setAttribute('x1', start.x.toString());
+          el.setAttribute('y1', start.y.toString());
+          el.setAttribute('x2', end.x.toString());
+          el.setAttribute('y2', end.y.toString());
       });
 
       const serializer = new XMLSerializer();
